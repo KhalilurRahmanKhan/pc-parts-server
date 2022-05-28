@@ -21,6 +21,7 @@ async function run() {
         const pcPartsDB = client.db("pcPartsDB");
         const products = pcPartsDB.collection("products");
         const users = pcPartsDB.collection("users");
+        const orders = pcPartsDB.collection("orders");
 
 
         app.get('/product', async (req, res) => {
@@ -77,6 +78,35 @@ async function run() {
     
 
 
+            app.post('/order/add', async (req, res) => {
+                const data = req.body;
+                const result = await orders.insertOne(data);
+                res.send(result);
+            });
+
+
+            app.get('/order/:email', async (req, res) => {
+                let email = req.params.email;
+          
+                const cursor = await orders.find({email});
+          
+                
+                const result = await cursor.toArray();
+          
+                res.send(result);
+                });
+
+
+                app.delete('/order/delete/:id', async (req, res) => {
+                    const id = req.params.id;
+            
+                    const filter = {_id:ObjectId(id)};
+                    
+                    const result = await orders.deleteOne(filter);
+            
+                    res.send(result);
+                  });
+          
 
 
 
