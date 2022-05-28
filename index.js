@@ -20,6 +20,7 @@ async function run() {
 
         const pcPartsDB = client.db("pcPartsDB");
         const products = pcPartsDB.collection("products");
+        const users = pcPartsDB.collection("users");
 
 
         app.get('/product', async (req, res) => {
@@ -43,6 +44,37 @@ async function run() {
             const result = await products.insertOne(data);
             res.send(result);
         });
+
+
+
+        app.put('/user/:email', async (req, res) => {
+            const email = req.params.email;
+    
+            const filter = {email};
+    
+            const options = {upsert:true};
+    
+    
+            const updateDoc = {$set:req.body}
+    
+            
+            const result = await users.updateOne(filter,updateDoc,options);
+    
+            res.send(result);
+          });
+
+          app.get('/user/:email', async (req, res) => {
+            let email = req.params.email;
+      
+            const cursor = await users.find({email});
+      
+            
+            const result = await cursor.toArray();
+      
+            res.send(result[0]);
+            });
+      
+    
 
 
 
