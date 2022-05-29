@@ -22,6 +22,7 @@ async function run() {
         const products = pcPartsDB.collection("products");
         const users = pcPartsDB.collection("users");
         const orders = pcPartsDB.collection("orders");
+        const reviews = pcPartsDB.collection("reviews");
 
 
         app.get('/product', async (req, res) => {
@@ -107,6 +108,12 @@ async function run() {
                     res.send(result);
                   });
           
+
+                  app.post('/review/add', async (req, res) => {
+                    const data = req.body;
+                    const result = await reviews.insertOne(data);
+                    res.send(result);
+                });
 
 
 
