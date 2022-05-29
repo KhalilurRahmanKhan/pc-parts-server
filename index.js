@@ -31,6 +31,13 @@ async function run() {
             const result = await cursor.toArray();
             res.send(result);
         });
+
+        app.get('/product/all', async (req, res) => {
+            const query = req.query;
+            const cursor = await products.find(query);
+            const result = await cursor.toArray();
+            res.send(result);
+        });
         app.get('/product/:id', async (req, res) => {
             let id = req.params.id;
             const cursor =await products.find({_id:ObjectId(id)});
@@ -46,6 +53,17 @@ async function run() {
             const result = await products.insertOne(data);
             res.send(result);
         });
+
+        app.delete('/product/delete/:id', async (req, res) => {
+            const id = req.params.id;
+    
+            const filter = {_id:ObjectId(id)};
+            
+            const result = await products.deleteOne(filter);
+    
+            res.send(result);
+          });
+  
 
 
 
@@ -74,6 +92,13 @@ async function run() {
             const result = await cursor.toArray();
       
             res.send(result[0]);
+            });
+
+          app.get('/user', async (req, res) => {
+            const query = req.query;
+            const cursor = await users.find(query);
+            const result = await cursor.toArray();
+            res.send(result);
             });
       
     
@@ -112,6 +137,14 @@ async function run() {
                   app.post('/review/add', async (req, res) => {
                     const data = req.body;
                     const result = await reviews.insertOne(data);
+                    res.send(result);
+                });
+
+
+                app.get('/review', async (req, res) => {
+                    const query = req.query;
+                    const cursor = await reviews.find(query);
+                    const result = await cursor.toArray();
                     res.send(result);
                 });
 
