@@ -1,6 +1,8 @@
 const express = require('express')
 var cors = require('cors')
 require('dotenv').config()
+const stripe = require("stripe")(process.env.STRIPE_SECRET_KEY);
+
 const { MongoClient, ServerApiVersion, ObjectId } = require('mongodb');
 
 const app = express()
@@ -25,6 +27,18 @@ async function run() {
         const reviews = pcPartsDB.collection("reviews");
 
 
+        app.post('/create-payment-intend',async(req,res)=>{
+            const {price} = req.body;
+            const amount = price*100;
+            const paymentIntent = await stripe.paymentIntents.create({
+                amount : amount,
+                currency : 'usd',
+                payment_method_types:['card']
+            });
+            res.send({clientSecret:paymentIntent.client.secret});
+        });
+
+
         app.get('/product', async (req, res) => {
             const query = req.query;
             const cursor = await products.find(query).limit(3);
@@ -38,13 +52,16 @@ async function run() {
             const result = await cursor.toArray();
             res.send(result);
         });
-        app.get('/product/:id', async (req, res) => {
+
+        app.get('/product/purchase/:id', async (req, res) => {
             let id = req.params.id;
-            const cursor =await products.find({_id:ObjectId(id)});
+         
+           
+            const cursor = await products.find({ _id: ObjectId(id) });
             const result = await cursor.toArray();
-         res.send(result[0]);
-            });
-      
+            res.send(result[0]);
+        });
+
 
 
 
@@ -56,97 +73,107 @@ async function run() {
 
         app.delete('/product/delete/:id', async (req, res) => {
             const id = req.params.id;
-    
-            const filter = {_id:ObjectId(id)};
-            
+
+            const filter = { _id: ObjectId(id) };
+
             const result = await products.deleteOne(filter);
-    
+
             res.send(result);
-          });
-  
+        });
+
 
 
 
         app.put('/user/:email', async (req, res) => {
             const email = req.params.email;
-    
-            const filter = {email};
-    
-            const options = {upsert:true};
-    
-    
-            const updateDoc = {$set:req.body}
-    
-            
-            const result = await users.updateOne(filter,updateDoc,options);
-    
+
+            const filter = { email };
+
+            const options = { upsert: true };
+
+
+            const updateDoc = { $set: req.body }
+
+
+            const result = await users.updateOne(filter, updateDoc, options);
+
             res.send(result);
-          });
+        });
 
-          app.get('/user/:email', async (req, res) => {
+        app.get('/user/:email', async (req, res) => {
             let email = req.params.email;
-      
-            const cursor = await users.find({email});
-      
-            
-            const result = await cursor.toArray();
-      
-            res.send(result[0]);
-            });
 
-          app.get('/user', async (req, res) => {
+            const cursor = await users.find({ email });
+
+
+            const result = await cursor.toArray();
+
+            res.send(result[0]);
+        });
+
+        app.get('/user', async (req, res) => {
             const query = req.query;
             const cursor = await users.find(query);
             const result = await cursor.toArray();
             res.send(result);
-            });
-      
-    
+        });
 
 
-            app.post('/order/add', async (req, res) => {
-                const data = req.body;
-                const result = await orders.insertOne(data);
-                res.send(result);
-            });
 
 
-            app.get('/order/:email', async (req, res) => {
-                let email = req.params.email;
-          
-                const cursor = await orders.find({email});
-          
-                
-                const result = await cursor.toArray();
-          
-                res.send(result);
-                });
+        app.post('/order/add', async (req, res) => {
+            const data = req.body;
+            const result = await orders.insertOne(data);
+            res.send(result);
+        });
 
 
-                app.delete('/order/delete/:id', async (req, res) => {
-                    const id = req.params.id;
-            
-                    const filter = {_id:ObjectId(id)};
-                    
-                    const result = await orders.deleteOne(filter);
-            
-                    res.send(result);
-                  });
-          
+        app.get('/order/:email', async (req, res) => {
+            let email = req.params.email;
 
-                  app.post('/review/add', async (req, res) => {
-                    const data = req.body;
-                    const result = await reviews.insertOne(data);
-                    res.send(result);
-                });
+            const cursor = await orders.find({ email });
 
 
-                app.get('/review', async (req, res) => {
-                    const query = req.query;
-                    const cursor = await reviews.find(query);
-                    const result = await cursor.toArray();
-                    res.send(result);
-                });
+            const result = await cursor.toArray();
+
+            res.send(result);
+        });
+
+        
+        app.get('/order/purchase/:id', async (req, res) => {
+            let id = req.params.id;
+         
+            const cursor = await orders.find({ _id: ObjectId(id) });
+            const result = await cursor.toArray();
+            res.send(result[0]);
+        });
+
+
+
+        app.delete('/order/delete/:id', async (req, res) => {
+            const id = req.params.id;
+
+            const filter = { _id: ObjectId(id) };
+
+            const result = await orders.deleteOne(filter);
+
+            res.send(result);
+        });
+
+
+        app.post('/review/add', async (req, res) => {
+            const data = req.body;
+            const result = await reviews.insertOne(data);
+            res.send(result);
+        });
+
+
+        app.get('/review', async (req, res) => {
+            const query = req.query;
+            const cursor = await reviews.find(query);
+            const result = await cursor.toArray();
+            res.send(result);
+        });
 
 
 
